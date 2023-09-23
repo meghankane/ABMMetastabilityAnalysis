@@ -1,0 +1,4 @@
+name = "ABMMetastabilityAnalysis"
+uuid = "e7dad7d3-e303-41d4-9932-3fb6e75f8a1e"
+authors = ["Meghan Kane <kanemeghan@gmail.com>"]
+version = "0.1.0"

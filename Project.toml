@@ -2,3 +2,6 @@ name = "ABMMetastabilityAnalysis"
 uuid = "e7dad7d3-e303-41d4-9932-3fb6e75f8a1e"
 authors = ["Meghan Kane <kanemeghan@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

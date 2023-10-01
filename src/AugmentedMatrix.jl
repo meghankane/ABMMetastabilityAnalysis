@@ -62,22 +62,3 @@ function augmented_rate_matrix(list_of_rate_matrices :: Array{B}, list_of_time_s
     end
     return J
 end 
-
-function compute_eigen(matrix::Matrix)
-    e = eigen(matrix)
-    eigenvalues = e.values
-    eigenvectors = e.vectors
-    return eigenvalues, eigenvectors
-end
-
-# If computeEigen performance isn't sufficient, use optimized eigen decomposition on sparse matrix with Arpack eigs
-# num_eigenvalues: and only compute a certain number of eigenvalues & eigenvectors
-# Cmputes eigenvalues of largest magnitude by default. See documentation: https://arpack.julialinearalgebra.org/stable/eigs/
-function compute_sparse_eigen(matrix::SparseMatrixCSC, num_eigenvalues::Int=3)
-    # converts to a sparse matrix (SparseMatrixCSC)
-    sparse_matrix = sparse(matrix)
-    eigen = eigs(sparse_matrix, nev=num_eigenvalues)
-    eigenvalues = eigen[1]
-    eigenvectors = eigen[2]
-    return eigenvalues, eigenvectors
-end

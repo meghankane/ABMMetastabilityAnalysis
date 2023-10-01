@@ -12,7 +12,7 @@ function invert_or_zero(x :: Real)
 end
 
 #Code to compute augmented rate matrix
-function augmentedRateMatrix(list_of_rate_matrices :: Array{B}, list_of_time_steps :: Array{T}) where {T <: Real, B <: Matrix{T}}
+function augmented_rate_matrix(list_of_rate_matrices :: Array{B}, list_of_time_steps :: Array{T}) where {T <: Real, B <: Matrix{T}}
     number_of_times = length(list_of_time_steps)
     @assert length(list_of_rate_matrices) == number_of_times
     @assert length(list_of_rate_matrices) ≥ 1
@@ -63,7 +63,7 @@ function augmentedRateMatrix(list_of_rate_matrices :: Array{B}, list_of_time_ste
     return J
 end 
 
-function computeEigen(matrix::Matrix)
+function compute_eigen(matrix::Matrix)
     e = eigen(matrix)
     eigenvalues = e.values
     eigenvectors = e.vectors
@@ -73,7 +73,7 @@ end
 # If computeEigen performance isn't sufficient, use optimized eigen decomposition on sparse matrix with Arpack eigs
 # num_eigenvalues: and only compute a certain number of eigenvalues & eigenvectors
 # Cmputes eigenvalues of largest magnitude by default. See documentation: https://arpack.julialinearalgebra.org/stable/eigs/
-function computeSparseEigen(matrix::SparseMatrixCSC, num_eigenvalues::Int=3)
+function compute_sparse_eigen(matrix::SparseMatrixCSC, num_eigenvalues::Int=3)
     # converts to a sparse matrix (SparseMatrixCSC)
     sparse_matrix = sparse(matrix)
     eigen = eigs(matrix, nev=num_eigenvalues)

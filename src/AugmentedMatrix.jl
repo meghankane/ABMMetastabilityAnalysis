@@ -60,3 +60,10 @@ function augmentedRateMatrix(list_of_rate_matrices :: Array{B}, list_of_time_ste
     end
     return J
 end 
+
+function computeEigen(matrix::Matrix)
+    e = eigen(matrix)
+    eigenvalues = e.values
+    eigenvectors = e.vectors
+    return eigenvalues, eigenvectors
+end

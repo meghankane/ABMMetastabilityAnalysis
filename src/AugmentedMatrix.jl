@@ -76,7 +76,7 @@ end
 function compute_sparse_eigen(matrix::SparseMatrixCSC, num_eigenvalues::Int=3)
     # converts to a sparse matrix (SparseMatrixCSC)
     sparse_matrix = sparse(matrix)
-    eigen = eigs(matrix, nev=num_eigenvalues)
+    eigen = eigs(sparse_matrix, nev=num_eigenvalues)
     eigenvalues = eigen[1]
     eigenvectors = eigen[2]
     return eigenvalues, eigenvectors

@@ -1,5 +1,7 @@
 module ABMMetastabilityAnalysis
 
-greet() = print("Hello World!")
+include("AugmentedMatrix.jl")
+
+export augmentedRateMatrix
 
 end # module ABMMetastabilityAnalysis

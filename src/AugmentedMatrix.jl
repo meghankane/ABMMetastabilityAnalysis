@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra, SparseArrays
 
 #Used in one line in function below
 function invert_or_zero(x::Real)
@@ -30,25 +30,19 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
 
 
     # Pre-allocating the final matrix J
-    J = zeros(T, N * M, N * M)
+    J = spzeros(T, N * M, N * M)
 
     #q in the paper is this, but with a minus sign. 
     #Though we never use the negative value so I didn't bother to invert this.
-    # q_positive = Array{Array{Real}}(undef, M)
-    # for k in 1:M
-    #     q_positive[k] = [sum(rates_tensor[i, j, k] for j = setdiff(1:N, i)) for i = 1:N]
-    # end
-    # return q_positive
+    # FIXME: Given that this is a rate matrix, does this just reduce to the diagonal of the matrix?
     q_positive = reduce(hcat, sum(Rk .- Diagonal(Rk); dims=2) for Rk = eachslice(rates_tensor; dims=3))
 
     # q_tilde_positive = copy(list_of_rate_matrices)
     q_tilde_positive = Array{T, 3}(undef, N, N, M)
 
     for k in 1:M
-        # FIXME: Why are we referencing q_tilde on the lhs & rhs? Is this just q_positive?
         q_tilde_positive[:, :, k] = rates_tensor[:, :, k] * diagm(invert_or_zero.(q_positive[:, k]))
         for i in 1:N
-            # FIXME: Why two indices to access q_tilde[k]? its 1-dimensional
             q_tilde_positive[i, i, k] = iszero(q_positive[i, k]) ? 1 : 0
         end
     end
@@ -56,7 +50,7 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     #Quick way to compute s, as denoted in the paper.
     #Since we took q_positive there is no need for the minus sign from the paper.
     # The paper references s_{ik} = exp(-ΔT_k * q_i (t)), does this correspond?
-    s = exp.(time_steps' .* q_positive)
+    s = exp.(-time_steps' .* q_positive)
 
     #Optimize me! (Perhaps a GPU kernel could do this quickly o.O)
     for i in 1:N
@@ -80,5 +74,5 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
             end
         end
     end
-    return J
+    return J, q_positive, q_tilde_positive, s
 end

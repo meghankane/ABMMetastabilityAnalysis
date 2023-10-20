@@ -50,7 +50,11 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     #Quick way to compute s, as denoted in the paper.
     #Since we took q_positive there is no need for the minus sign from the paper.
     # The paper references s_{ik} = exp(-ΔT_k * q_i (t)), does this correspond?
+<<<<<<< HEAD
     s = exp.(-time_steps' .* q_positive)
+=======
+    s = exp.(-1 .* time_steps' .* q_positive)
+>>>>>>> 2ae0b4f (Fixing jump chain operator)
 
     #Optimize me! (Perhaps a GPU kernel could do this quickly o.O)
     for i in 1:N
@@ -59,7 +63,7 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
                 for k in 1:l-1
                     J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
                         q_tilde_positive[i, j, l],
-                        q_positive[i, k]^(-1),
+                        invert_or_zero(q_positive[i, k]),
                         (1 - s[i, k]) * (1 - s[i, l]),
                         prod(s[i, m] for m in k:l)
                     )
@@ -67,9 +71,9 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
                 k = l
                 J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
                     q_tilde_positive[i, j, k],
-                    q_positive[i, k]^(-1),
+                    invert_or_zero(q_positive[i, k]),
                     # FIXME: This has an extra minus in ΔT_k ...
-                    (s[i, k] - time_steps[k] * q_positive[i, k] - 1)
+                    (s[i, k] + time_steps[k] * q_positive[i, k] - 1)
                 )
             end
         end

@@ -27,18 +27,21 @@ function pcca(transition_matrix::Matrix{Float64})
     eigenvalues = eigenvalues[indices]
     eigenvectors = eigenvectors[:, indices]
     
-    # determine optimal # of clusters
     n_clusters = optimal_num_clusters(eigenvalues)
+    assignments = assign_cluster_membership(n_states, n_clusters, eigenvectors)
     
-    # assign to clusters
+    return assignments, n_clusters
+end
+
+# TODO: replace placeholder simple cluster membership function with more sophisticated function
+function assign_cluster_membership(n_states, n_clusters, eigenvectors)
     assignments = zeros(Int, n_states)
     for i in 1:n_states
         # assign state i to cluster with largest component in eigenvector matrix
         _, index = findmax(abs.(eigenvectors[i, 2:n_clusters+1]))
         assignments[i] = index
     end
-    
-    return assignments, n_clusters
+    return assignments
 end
 
 # If computeEigen performance isn't sufficient, use optimized eigen decomposition on sparse matrix with Arpack eigs

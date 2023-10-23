@@ -50,11 +50,7 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     #Quick way to compute s, as denoted in the paper.
     #Since we took q_positive there is no need for the minus sign from the paper.
     # The paper references s_{ik} = exp(-ΔT_k * q_i (t)), does this correspond?
-<<<<<<< HEAD
     s = exp.(-time_steps' .* q_positive)
-=======
-    s = exp.(-1 .* time_steps' .* q_positive)
->>>>>>> 2ae0b4f (Fixing jump chain operator)
 
     #Optimize me! (Perhaps a GPU kernel could do this quickly o.O)
     for i in 1:N

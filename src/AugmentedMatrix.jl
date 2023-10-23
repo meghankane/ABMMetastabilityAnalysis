@@ -1,11 +1,11 @@
 using LinearAlgebra, SparseArrays
 
 #Used in one line in function below
-function invert_or_zero(x::Real)
-    if x == 0
-        return 0
+function invert_or_zero(x::T) where {T <: Real}
+    if iszero(x)
+        return zero(T)
     else
-        return 1 / x
+        return one(x) / x
     end
 end
 

@@ -1,7 +1,7 @@
 using LinearAlgebra, SparseArrays
 
 #Used in one line in function below
-function invert_or_zero(x::T) where {T <: Real}
+@inline function invert_or_zero(x::T) where {T <: Real}
     if iszero(x)
         return zero(T)
     else
@@ -32,25 +32,28 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     # Pre-allocating the final matrix J
     J = spzeros(T, N * M, N * M)
 
-    #q in the paper is this, but with a minus sign. 
+    #qi in the paper is this, but with a minus sign. 
     #Though we never use the negative value so I didn't bother to invert this.
     # FIXME: Given that this is a rate matrix, does this just reduce to the diagonal of the matrix?
-    q_positive = reduce(hcat, sum(Rk .- Diagonal(Rk); dims=2) for Rk = eachslice(rates_tensor; dims=3))
+    # Confirmed correct with Sirkorski's code
+    qi = reduce(hcat, sum(Rk .- Diagonal(Rk); dims=2) for Rk = eachslice(rates_tensor; dims=3))
 
-    # q_tilde_positive = copy(list_of_rate_matrices)
-    q_tilde_positive = Array{T, 3}(undef, N, N, M)
+    # qt = copy(list_of_rate_matrices)
+    # FIXME: Use `similar` instead, since the dimensions are the same as Rk
+    qt = Array{T, 3}(undef, N, N, M)
 
+    # FIXME: Its qt the one that so for does not coincide with Sirkorki's
     for k in 1:M
-        q_tilde_positive[:, :, k] = rates_tensor[:, :, k] * diagm(invert_or_zero.(q_positive[:, k]))
+        qt[:, :, k] = rates_tensor[:, :, k] * diagm(invert_or_zero.(qi[:, k]))
         for i in 1:N
-            q_tilde_positive[i, i, k] = iszero(q_positive[i, k]) ? one(T) : zero(T)
+            qt[i, i, k] = iszero(qi[i, k]) ? one(T) : zero(T)
         end
     end
 
     #Quick way to compute s, as denoted in the paper.
-    #Since we took q_positive there is no need for the minus sign from the paper.
+    #Since we took qi there is no need for the minus sign from the paper.
     # The paper references s_{ik} = exp(-ΔT_k * q_i (t)), does this correspond?
-    s = exp.(-time_steps' .* q_positive)
+    s = exp.(-time_steps' .* qi)
 
     #Optimize me! (Perhaps a GPU kernel could do this quickly o.O)
     for i in 1:N
@@ -58,21 +61,21 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
             for l in 1:M
                 for k in 1:l-1
                     J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
-                        q_tilde_positive[i, j, l],
-                        invert_or_zero(q_positive[i, k]),
+                        qt[i, j, l],
+                        invert_or_zero(qi[i, k]),
                         (1 - s[i, k]) * (1 - s[i, l]),
                         prod(s[i, m] for m in k:l)
                     )
                 end
                 k = l
                 J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
-                    q_tilde_positive[i, j, k],
-                    invert_or_zero(q_positive[i, k]),
+                    qt[i, j, k],
+                    invert_or_zero(qi[i, k]),
                     # FIXME: This has an extra minus in ΔT_k ...
-                    (s[i, k] + time_steps[k] * q_positive[i, k] - 1)
+                    (s[i, k] + time_steps[k] * qi[i, k] - 1)
                 )
             end
         end
     end
-    return J, q_positive, q_tilde_positive, s
+    return J, qi, qt, s
 end

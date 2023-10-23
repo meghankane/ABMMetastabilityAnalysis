@@ -43,7 +43,7 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     for k in 1:M
         q_tilde_positive[:, :, k] = rates_tensor[:, :, k] * diagm(invert_or_zero.(q_positive[:, k]))
         for i in 1:N
-            q_tilde_positive[i, i, k] = iszero(q_positive[i, k]) ? 1 : 0
+            q_tilde_positive[i, i, k] = iszero(q_positive[i, k]) ? one(T) : zero(T)
         end
     end
 

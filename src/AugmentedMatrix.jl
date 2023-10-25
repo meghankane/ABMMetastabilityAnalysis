@@ -43,8 +43,9 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     qt = Array{T, 3}(undef, N, N, M)
 
     # FIXME: Its qt the one that so for does not coincide with Sirkorki's
+    # Conclusion: This is dividing the cols of Rk, when its supposed to dive rowwise.
     for k in 1:M
-        qt[:, :, k] = rates_tensor[:, :, k] * diagm(invert_or_zero.(qi[:, k]))
+        qt[:, :, k] = diagm(invert_or_zero.(qi[:, k])) * rates_tensor[:, :, k]
         for i in 1:N
             qt[i, i, k] = iszero(qi[i, k]) ? one(T) : zero(T)
         end

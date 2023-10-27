@@ -45,7 +45,7 @@ function pcca_memberships(P::Matrix{Float64}, m::Int, π::Vector{Float64}=nothin
     end
 
     n_closed_components = length(closed_components)
-    closed_states = vcat(closed_components...)
+    closed_states = reduce(vcat, closed_components)
     if isempty(transition_states)
         transition_states = Int[]
     else

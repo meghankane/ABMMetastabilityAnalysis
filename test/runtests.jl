@@ -1,7 +1,10 @@
 using ABMMetastabilityAnalysis
+using SparseArrays
 using Test
 
-@testset "Examples from the paper" begin
+# AugmentedMatrix.jl
+@testset "Examples from the Augmented Jump Chain paper" begin
+   # https://onlinelibrary.wiley.com/doi/full/10.1002/adts.202000274
    # Section 5.1 - A simple two-state model
    i = [1, 1]
    j = [1, 2]

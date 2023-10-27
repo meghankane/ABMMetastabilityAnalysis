@@ -36,7 +36,7 @@ function pcca_memberships(P::Matrix{Float64}, m::Int, π::Vector{Float64}=nothin
     for component in components
         rest = setdiff(1:n, component)
         # if component is closed, store with positive equilibrium distribution
-        if sum(P[component, rest]) == 0
+        if isapprox(sum(P[component, rest]), 0, atol=0.0001)
             push!(closed_components, component)
         # otherwise store as transition states with vanishing equilibrium distribution
         else

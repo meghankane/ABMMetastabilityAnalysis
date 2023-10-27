@@ -170,7 +170,7 @@ end
 
 # Reimplementation of PCCA+ spectral clustering method using the inner simplex algorithm.
 # https://github.com/deeptime-ml/deeptime/blob/a6ac0b93a55d688fe8f3af119680105763366220/deeptime/markov/tools/analysis/dense/_pcca.py#L14
-function pcca_connected_isa(eigenvectors, num_clusters)
+function pcca_connected_isa(eigenvectors, num_clusters, tol=1e-6)
     n, m = size(eigenvectors)
     if num_clusters > m
         throw(ArgumentError("Cannot cluster the ($n x $m) eigenvector matrix to $num_clusters clusters."))
@@ -178,10 +178,10 @@ function pcca_connected_isa(eigenvectors, num_clusters)
 
     # Check if (ONLY) 1st eigenvector is constant
     diffs = abs.(maximum(eigenvectors, dims=1) .- minimum(eigenvectors, dims=1))
-    if diffs[1] >= 1e-6
+    if diffs[1] >= tol
         throw(error("Unable to do PCCA. 1st eigenvector is not constant. The transition matrix is not connected or the eigenvectors are incorrectly sorted."))
     end
-    if diffs[2] <= 1e-6
+    if diffs[2] <= tol
         throw(error("Unable to do PCCA. An eigenvector after 1st eigenvector is constant. Potentially sorting of eigenvectors issue."))
     end
 

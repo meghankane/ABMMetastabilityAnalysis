@@ -117,22 +117,18 @@ end
 
 # Reimplementation of PCCA+ spectral clustering method with optimized memberships (assumes fully connected transition matrix)
 # https://github.com/deeptime-ml/deeptime/blob/a6ac0b93a55d688fe8f3af119680105763366220/deeptime/markov/tools/analysis/dense/_pcca.py#L197
-function pcca_connected(P, n, pi=nothing)
+function pcca_connected(P, n, π=stationary_distribution(P))
     labels = connected_sets(P)
     n_components = length(labels)
     if n_components > 1
         throw(error("Unable to use pcca_connected, transition matrix is not fully connected."))
     end
 
-    if pi === nothing
-        pi = stationary_distribution(P)
-    else
-        if size(pi, 1) != size(P, 1)
-            throw(error("Stationary distribution must span the entire state space but got $(size(pi, 1)) states " *
-                                "instead of $(size(P, 1))."))
-        end
-        pi ./= sum(pi)  # normalization
+    if size(π, 1) != size(P, 1)
+        throw(error("Stationary distribution must span the entire state space but got $(size(π, 1)) states " *
+                            "instead of $(size(P, 1))."))
     end
+    π ./= sum(π)  # normalization
 
     eigenvalues, eigenvectors = eigen(P)
     indices = sortperm(eigenvalues, rev=true)
@@ -140,7 +136,7 @@ function pcca_connected(P, n, pi=nothing)
 
     # orthonormalize
     for i in 1:n
-        evecs[:, i] /= sqrt(dot(evecs[:, i] .* pi, evecs[:, i]))
+        evecs[:, i] /= sqrt(dot(evecs[:, i] .* π, evecs[:, i]))
     end
 
     # make 1st eigenvector positive

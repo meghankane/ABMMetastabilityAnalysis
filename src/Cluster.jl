@@ -15,7 +15,9 @@ function pcca(transition_matrix::Matrix{Float64})
     
     # verify transition_matrix is row stochastic (sums to 1)
     for i in 1:n_states
-        @assert abs(sum(transition_matrix[i, :]) - 1) < 1e-10 "Row $i of transition matrix doesn't sum to 1"
+        if abs(sum(transition_matrix[i, :]) - 1) >= 1e-10
+            throw(ArgumentError("Row $i of transition matrix doesn't sum to 1"))
+        end
     end
     
     # compute eigenvalues & corresponding eigenvectors

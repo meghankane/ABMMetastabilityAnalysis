@@ -146,7 +146,7 @@ function pcca_connected(P, n, pi=nothing)
     # make 1st eigenvector positive
     evecs[:, 1] = abs.(evecs[:, 1])
 
-    if !all(isreal.(evecs))
+    if any(x -> !isreal(x), evecs)
         println("Transition matrix has complex eigenvectors. Forcing eigenvectors to be real (see DeepTime note).")
     end
     evecs = real.(evecs)
@@ -159,8 +159,7 @@ function pcca_connected(P, n, pi=nothing)
     memberships = evecs[:, :] * rot_matrix
 
     # force memberships to be in range [0,1] (due to numerical errors)
-    memberships = max.(memberships, 0.0)
-    memberships = min.(memberships, 1.0)
+    memberships = clamp.(memberships, 0.0, 1.0)
 
     for i in 1:size(memberships, 1)
         memberships[i, :] ./= sum(memberships[i, :])

@@ -31,8 +31,8 @@ function pcca_memberships(P::Matrix{Float64}, m::Int, π::Vector{Float64}=nothin
 
     chi = zeros(n, m)
     components = connected_sets(P)
-    closed_components = []
-    transition_states = []
+    closed_components = Vector{Number}[]
+    transition_states = Vector{Number}[]
     for component in components
         rest = setdiff(1:n, component)
         # if component is closed, store with positive equilibrium distribution

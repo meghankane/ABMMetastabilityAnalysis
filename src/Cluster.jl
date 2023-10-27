@@ -4,7 +4,7 @@ using Arpack
 function optimal_num_clusters(eigenvalues::Vector{Float64})
     # find index where the gap between successive eigenvalues is maximized
     gaps = diff(eigenvalues)
-    _, index = findmax(gaps)
+    _, index = findmax(abs.(gaps))
     # add 1 due to 0-indexing to get optimal number of clusters 
     opt_num_clusters = index + 1 
     return opt_num_clusters

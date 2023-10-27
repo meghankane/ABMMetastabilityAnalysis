@@ -17,3 +17,15 @@ using Test
    Q = reshape(collect(Iterators.flatten(list_q)), (2, 2, 8))
    t = fill(1.0, 8)
 end
+
+# Cluster.jl
+@testset "Optimal Number of Clusters Tests" begin
+   eigenvalues = [7.0, 3.0, 1.0, 0.5]
+   expected_clusters = 2
+   @test optimal_num_clusters(eigenvalues) == expected_clusters
+
+   # mix of positive and negative eigenvalues
+   eigenvalues = [-3.5, -3.0, -0.5, 1.0, 2.0]
+   expected_clusters = 3
+   @test optimal_num_clusters(eigenvalues) == expected_clusters
+end

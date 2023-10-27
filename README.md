@@ -8,14 +8,15 @@ This was developed for the application of studying opinion dynamics where we aim
 
 ## Usage
 
-`AugmentedMatrix.jl`: 
+### Entrypoints
+To compute the augmented rate matrix, reference `AugmentedMatrix.jl`: 
 ```julia
 augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T})
 ```
 
-`Cluster.jl`: 
+To use PCCA+ on the transition matrix, $P$. With the `PCCAModel` returned from the `pcca` function, access the metastable sets with `sets(model)`. Reference `Cluster.jl`: 
 ```julia
-pcca(transition_matrix::Matrix{Float64})
+pcca(P::Matrix{Float64}, num_clusters::Int)
 ```
 
 ## Test

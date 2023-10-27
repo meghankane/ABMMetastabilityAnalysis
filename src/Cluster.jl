@@ -53,7 +53,7 @@ end
 
 # Reimplementation of DeepTime PCCA in Julia
 # https://github.com/deeptime-ml/deeptime/blob/a6ac0b93a55d688fe8f3af119680105763366220/deeptime/markov/_pcca.py#L9
-function pcca(P, num_clusters)
+function pcca(P::Matrix{Float64}, num_clusters::Int)
     pi = compute_stationary_distribution(P)
     memberships = pcca_memberships(P, num_clusters, pi)
     pi_coarse_grained = memberships' * pi  # coarse-grained stationary distribution

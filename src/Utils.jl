@@ -1,5 +1,6 @@
 using LinearAlgebra
 using LightGraphs
+using SparseArrays
 
 # Various helper functions needed for clustering
 
@@ -74,14 +75,10 @@ function is_transition_matrix(T, tol=1e-12)
 end
 
 # computes hitting probabilities for all states to target states
-function hitting_probability(T, target)
+function hitting_probability(T, target::AbstractVector{<:Integer})
     if issparse(T)
         error("Needs to be sparse (no sparse implementation for now)")
     else
-        if !(target isa AbstractArray)
-            target = [target] # reformat target
-        end
-        
         n = size(T, 1)
         nontarget = setdiff(1:n, target)
         stable = findall(x -> isapprox(x, 1.0), diag(T))

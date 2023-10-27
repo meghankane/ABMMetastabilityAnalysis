@@ -43,15 +43,3 @@ function assign_cluster_membership(n_states, n_clusters, eigenvectors)
     end
     return assignments
 end
-
-# If computeEigen performance isn't sufficient, use optimized eigen decomposition on sparse matrix with Arpack eigs
-# num_eigenvalues: and only compute a certain number of eigenvalues & eigenvectors
-# Cmputes eigenvalues of largest magnitude by default. See documentation: https://arpack.julialinearalgebra.org/stable/eigs/
-function compute_sparse_eigen(matrix::SparseMatrixCSC, num_eigenvalues::Int=3)
-    # converts to a sparse matrix (SparseMatrixCSC)
-    sparse_matrix = sparse(matrix)
-    eigen = eigs(sparse_matrix, nev=num_eigenvalues)
-    eigenvalues = eigen[1]
-    eigenvectors = eigen[2]
-    return eigenvalues, eigenvectors
-end

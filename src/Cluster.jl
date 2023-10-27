@@ -82,11 +82,11 @@ end
 # https://github.com/deeptime-ml/deeptime/blob/a6ac0b93a55d688fe8f3af119680105763366220/deeptime/markov/_pcca.py#L71
 abstract type Model end
 
-struct PCCAModel <: Model
-    transition_matrix_coarse::Matrix{Float64}
-    pi_coarse::Vector{Float64}
-    memberships::Matrix{Float64}
-    metastable_distributions::Matrix{Float64}
+struct PCCAModel{T} <: Model
+    transition_matrix_coarse::Matrix{T}
+    pi_coarse::Vector{T}
+    memberships::Matrix{T}
+    metastable_distributions::Matrix{T}
     m::Int
 end
 

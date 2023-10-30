@@ -13,5 +13,5 @@ using JLD2
    # Loading ground truth
    J_true = load("J_sikorski_true.jld2")["J"]
 
-   @test augmentedRateMatrix(Q, t) ≈ J_true
+   @test augmented_rate_matrix(Q, t) ≈ J_true
 end

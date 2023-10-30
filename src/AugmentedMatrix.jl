@@ -21,7 +21,7 @@ for `t` in `time_steps`.
 - `M`: is the number of disjoint intervals of time.
 - `N`: is the number of states of the Discretized Markov process.
 """
-function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) where {T<:Real}
+function augmented_rate_matrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) where {T<:Real}
     N, _, M = size(rates_tensor)
 
     M == length(time_steps) || throw(ArgumentError("More rate matrices than " *

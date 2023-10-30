@@ -75,5 +75,5 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
             end
         end
     end
-    return J, qi, qt, s
+    return J
 end

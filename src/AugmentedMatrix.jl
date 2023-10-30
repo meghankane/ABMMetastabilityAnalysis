@@ -35,14 +35,11 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
     #qi in the paper is this, but with a minus sign. 
     #Though we never use the negative value so I didn't bother to invert this.
     # FIXME: Given that this is a rate matrix, does this just reduce to the diagonal of the matrix?
-    # Confirmed correct with Sirkorski's code
     qi = reduce(hcat, sum(Rk .- Diagonal(Rk); dims=2) for Rk = eachslice(rates_tensor; dims=3))
 
     # qt = copy(list_of_rate_matrices)
-    # FIXME: Use `similar` instead, since the dimensions are the same as Rk
-    qt = Array{T, 3}(undef, N, N, M)
+    qt = similar(rates_tensor)
 
-    # FIXME: Its qt the one that so for does not coincide with Sirkorki's
     # Conclusion: This is dividing the cols of Rk, when its supposed to dive rowwise.
     for k in 1:M
         qt[:, :, k] = diagm(invert_or_zero.(qi[:, k])) * rates_tensor[:, :, k]
@@ -61,15 +58,15 @@ function augmentedRateMatrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) wh
         for j in 1:N
             for l in 1:M
                 for k in 1:l-1
-                    J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
+                    J[i+(k-1)*N, j+(l-1)*N] = *(inv(time_steps[k]),
                         qt[i, j, l],
-                        invert_or_zero(qi[i, k]),
+                        inv(qi[i, k]),
                         (1 - s[i, k]) * (1 - s[i, l]),
-                        prod(s[i, m] for m in k:l)
+                        prod(s[i, m] for m in k+1:l-1; init = one(T))
                     )
                 end
                 k = l
-                J[i+(k-1)*N, j+(l-1)*N] = *(time_steps[k]^(-1),
+                J[i+(k-1)*N, j+(l-1)*N] = *(inv(time_steps[k]),
                     qt[i, j, k],
                     invert_or_zero(qi[i, k]),
                     # FIXME: This has an extra minus in ΔT_k ...

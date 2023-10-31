@@ -7,4 +7,6 @@ rate_tensor = precomputed_dt["rates_tensor"]
 rate_list = [copy(r) for r = eachslice(rate_tensor; dims=3)]
 time_steps = axes(rate_tensor, 3) |> collect
 
-augmented_rate_matrix(rate_list, time_steps)
+t = fill(0.01, 200)
+
+augmented_rate_matrix(rate_list, t)

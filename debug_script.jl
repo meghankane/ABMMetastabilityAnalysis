@@ -4,7 +4,6 @@ using JLD2
 precomputed_data = load("rate_matrices/ratemat_seed1.jld2")
 rate_tensor = precomputed_data["rates_tensor"]
 
-rate_list = [copy(r) for r = eachslice(rate_tensor; dims=3)]
-time_steps = axes(rate_tensor, 3) |> collect
+t = fill(0.01, 200)
 
-augmented_rate_matrix(rate_list, time_steps)
+augmented_rate_matrix(rate_tensor, t)

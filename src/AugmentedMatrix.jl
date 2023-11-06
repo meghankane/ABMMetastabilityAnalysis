@@ -21,7 +21,8 @@ for `t` in `time_steps`.
 - `M`: is the number of disjoint intervals of time.
 - `N`: is the number of states of the Discretized Markov process.
 """
-function augmented_rate_matrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) where {T<:Real}
+function augmented_rate_matrix(rates_tensor::AbstractArray{T,3},
+    time_steps::AbstractVector{T}; droptol=eps(T)) where {T<:Real}
     N, _, M = size(rates_tensor)
 
     M == length(time_steps) || throw(ArgumentError("More rate matrices than " *
@@ -44,7 +45,11 @@ function augmented_rate_matrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) 
     s = exp.(-time_steps' .* qi)
 
     # Preallocating vectors II, JJ, VV that make the sparse matrix J
+<<<<<<< HEAD
     # They all have size N^2 * binom(N+1, 2) (triangular numbers)
+=======
+    # They all have size N^2 * binom(M+1, 2) (triangular numbers)
+>>>>>>> 36728fe (Small code changes & adjustments)
     sz = N^2 * binomial(M + 1, 2)
     II = Vector{Int}(undef, sz)
     JJ = Vector{Int}(undef, sz)
@@ -73,11 +78,14 @@ function augmented_rate_matrix(rates_tensor::Array{T,3}, time_steps::Vector{T}) 
 
         entry += 1
     end
+<<<<<<< HEAD
 
     @assert entry == sz+1 # Confirming the number of entries match up.
 
+=======
+>>>>>>> 36728fe (Small code changes & adjustments)
     # Create J directly as sparse, and drop subnormal numbers
     J = sparse(II, JJ, VV)
-    droptol!(J, eps(T))
+    droptol!(J, droptol)
     return J
 end

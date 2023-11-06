@@ -5,37 +5,37 @@ using SparseArrays
 using LightGraphs
 using Optim
 
-function optimal_num_clusters(eigenvalues::Vector{Float64})
+function optimal_num_clusters(eigenvalues::AbstractVector)
     # find index where the gap between successive eigenvalues is maximized
     gaps = diff(eigenvalues)
     _, index = findmax(abs.(gaps))
     # add 1 due to 0-indexing to get optimal number of clusters 
-    opt_num_clusters = index + 1 
+    opt_num_clusters = index + 1
     return opt_num_clusters
 end
 
-function pcca_simple(transition_matrix::Matrix{Float64})
+function pcca_simple(transition_matrix::AbstractMatrix)
     n_states = size(transition_matrix, 1)
-    
+
     # verify transition_matrix is row stochastic (sums to 1)
     for i in 1:n_states
         if abs(sum(transition_matrix[i, :]) - 1) >= 1e-10
             throw(ArgumentError("Transition matrix isn't row stochastic. Row $i doesn't sum to 1"))
         end
     end
-    
+
     # compute eigenvalues & corresponding eigenvectors
     eigenvalues, eigenvectors = eigen(transition_matrix)
-    
+
     # sort in decreasing order
     # TODO: how to handle complex eigenvalues? sorting will fail
     indices = sortperm(eigenvalues, rev=true)
     eigenvalues = eigenvalues[indices]
     eigenvectors = eigenvectors[:, indices]
-    
+
     num_clusters = optimal_num_clusters(eigenvalues)
     assignments = assign_cluster_membership(n_states, num_clusters, eigenvectors)
-    
+
     return assignments, num_clusters
 end
 
@@ -71,7 +71,7 @@ function pcca(P::Matrix{Float64}, num_clusters::Int)
 
     # symmetrize & renormalize (eliminates numerical errors)
     X = Diagonal(pi_coarse_grained) * P_coarse_grained
-    
+
     # normalize to get the coarse-grained transition matrix
     P_coarse_grained = X ./ sum(X, dims=2)
 

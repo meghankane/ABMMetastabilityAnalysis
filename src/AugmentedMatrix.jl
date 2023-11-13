@@ -45,11 +45,7 @@ function augmented_rate_matrix(rates_tensor::AbstractArray{T,3},
     s = exp.(-time_steps' .* qi)
 
     # Preallocating vectors II, JJ, VV that make the sparse matrix J
-<<<<<<< HEAD
-    # They all have size N^2 * binom(N+1, 2) (triangular numbers)
-=======
     # They all have size N^2 * binom(M+1, 2) (triangular numbers)
->>>>>>> 36728fe (Small code changes & adjustments)
     sz = N^2 * binomial(M + 1, 2)
     II = Vector{Int}(undef, sz)
     JJ = Vector{Int}(undef, sz)
@@ -78,12 +74,6 @@ function augmented_rate_matrix(rates_tensor::AbstractArray{T,3},
 
         entry += 1
     end
-<<<<<<< HEAD
-
-    @assert entry == sz+1 # Confirming the number of entries match up.
-
-=======
->>>>>>> 36728fe (Small code changes & adjustments)
     # Create J directly as sparse, and drop subnormal numbers
     J = sparse(II, JJ, VV)
     droptol!(J, droptol)

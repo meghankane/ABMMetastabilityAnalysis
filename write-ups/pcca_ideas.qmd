@@ -1,0 +1,74 @@
+---
+title: Trying to apply PCCA+ to an Augmented Jump Chain
+---
+
+# Main Idea
+
+We use an Agent Based Model to simulate the Opinion Dynamics Problem. We then
+try to use the Agumented Jump Chain (AJC) to the simulation results obtained to
+get a generator for the jump process of agents between different influencers. We
+then try to apply PCCA+ to the resulting AJC to study the long-term clustering
+properties of the non-autonomous process of the Opinion Dynamics simulations.
+
+The time-space discretization scheme used for the AJC implementation is as
+follows: time is discretized into the same intervals used in the ABM simulation
+(i.e. the ones resulting from the numerical integration procedure). These are
+constant, since non-adaptive integration methods are used for the simulation.
+The space discretization is not provided explicitly. The opinion space is
+partitioned into the "clicques" or "followings" of a given influencer. In other
+words, the jumps between boxes in state space are switches from one influencer
+to another. This defines an implicit partition of state space, as the
+relationship of followership between an agent and an influencer is
+(stochastically) determined by their distance to one another.
+
+# Some results
+
+At each time step of the ABM simulation process we calculate the rate at which
+each influencer wins or loses followers (agents). These rates correspond to the
+rate of a jump process, one for each influencer, that determines the stochastic
+jumps a given agent might make from following one influencer to any other.
+
+These rates are recorded at each time step during the integration procedure and
+stored in $M$ matrices of shape $I \times I$, or equivalently, in a $I \times I
+\times M$ tensor. We refer to this tensor as $R$, with "frames" $R_k$ for $k =
+1, \dots, M$. Each $R_k$ represents the jump rates for each influencer in the
+system at time $k$.
+
+Given a rate tensor $R$ we can calculate the AJC either directly, or by
+transorming each rate matrix $R_k$ to a probability transition matrix $P_k$ by
+calculating the exponential of matrix $R_k$. i.e. $P_k = \exp(R_k)$. 
+
+In the following figure, we show the resulting AJC matrix calculated from rate
+matrices. Note how the logarithm of each entry is what is displayed. Given the
+properties of the AJC, the entries of the matrix decay with a speed that makes
+any pattern finding by color challenging, which is why the logarithm is shown.
+
+![](../img/subnormal_trimmed_ajc_s1.pdf)
+
+In this image, the sub-normal numbers (i.e. those smaller than the machine
+epsilon for Floating Point 64 bit numbers) are trimmed and set explicitly to
+zero.
+
+Changing the parameters in the simulation to affect how clusters form (e.g. by
+changing influencer friction and attractive forces) results in AJC matrices that
+"look" different, but it is difficult to quantify exactly how. I tried to find
+these similarites and differences by looking at other quantitative properties of
+the matrices, more on that on the next section. It is also worth noting that the
+resulting AJC matrices are almost never row-stochastic, and were thus normalized
+for the next stages of the experiments.
+
+Whenever the AJC procedure is applied to probability transition matrices the
+resulting matrix is completely different from the one obtained by using rate
+matrices, even though the information is essentially the same. The resulting AJC
+obtained using rate matrices (we will refer to it as $J_r$) and the one obtained
+by converting those same rate matrices to probability transition matrices
+(henceforth denoted $J_p$) don't even share the same broad structure. The
+entries of $J_r$ decay rapidly as we get further away from the main diagonal, to
+the point where very soon these entries become sub-normal and are thus trimmed
+out of the final result. This is not the case in $J_p$, the entries do decay but
+in what appears to be linear fashion.
+
+![]() picture here
+
+
+# The challenges

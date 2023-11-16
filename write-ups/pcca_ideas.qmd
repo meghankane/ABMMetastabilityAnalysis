@@ -1,6 +1,32 @@
 ---
 title: Trying to apply PCCA+ to an Augmented Jump Chain
+jupyter: julia-1.9
+echo: false
 ---
+
+:::{.hidden}
+
+```{julia}
+using Pkg
+using ABMMetastabilityAnalysis, JLD2, Plots, SparseArrays
+using LinearAlgebra
+Pkg.activate("../.")
+```
+
+```{julia}
+theme(:ggplot2, cmap=:viridis)
+
+precomputed_data = load("../rate_matrices/ratemat_seed1.jld2")
+rate_tensor = precomputed_data["rates_tensor"]
+R = rate_tensor[:, :, 1:end-1]
+
+P = mapslices(A -> transpose(exp(A)), R; dims=(1, 2))
+t = fill(0.01, 199)
+
+Jr = augmented_rate_matrix(R, t)
+Jp = augmented_rate_matrix(P, t)
+```
+:::
 
 # Main Idea
 
@@ -43,7 +69,11 @@ matrices. Note how the logarithm of each entry is what is displayed. Given the
 properties of the AJC, the entries of the matrix decay with a speed that makes
 any pattern finding by color challenging, which is why the logarithm is shown.
 
-![](../img/subnormal_trimmed_ajc_s1.pdf)
+```{julia}
+#| fig-cap: ARM calculated with rate matrices, sub-normal trimmed.
+#| fig-align: center
+spy(replace!(log.(Jr), -Inf => 0) |> dropzeros!)
+```
 
 In this image, the sub-normal numbers (i.e. those smaller than the machine
 epsilon for Floating Point 64 bit numbers) are trimmed and set explicitly to
@@ -66,9 +96,106 @@ by converting those same rate matrices to probability transition matrices
 entries of $J_r$ decay rapidly as we get further away from the main diagonal, to
 the point where very soon these entries become sub-normal and are thus trimmed
 out of the final result. This is not the case in $J_p$, the entries do decay but
-in what appears to be linear fashion.
+in what appears to be linear fashion. Note how the color depends on the
+magnitude of the entry, not on the logarithm of it as it dit for the previous
+graphic.
 
-![]() picture here
+![ARM calculated with probability transition matrices](../img/probmats.png)
 
+```{julia}
+#| fig-cap: ARM calculated with probability transition matrices
+# spy(Jp)
+```
+
+Given that the implementation of the Augmented Jump Chain algorithm was tested
+against the canonical python version used to compute the results and produce the
+figures in the original paper, and proved to produce identical results, we have
+no reason to believe the algorithm is in some ways flawed. With this in mind we
+first procede to an examination of the matrices eigenvalues and the application
+of PCCA+ to them. Initially we tried going directly to PCCA+ but the matrices
+violate some condition that are requiered by the algorithm. More comments on
+this on the next section.
 
 # The challenges
+
+Trying to quantify the properties of the computed ARMs we calculate their
+respective eigenvalues.
+
+For the probability transition matrix version we can see how they behave:
+
+```{julia}
+#| fig-cap: Sorted eigenvalues of the probability ARM.
+theme(:ggplot2)
+valsp, _ = eigen(Jp |> Matrix)
+plot(valsp)
+```
+
+We can see the expected gap in eigenvalues, they are all real, and no one
+eigenvalue is greater than 1. However, they do not behave as we would expect the
+eigenvalues of a stochastic matrix to do. The largest eigenvalue is far from 1,
+and they are not always strictly positive. This is because the resulting ARM is
+not stochastic by any means (neither row nor column wise). It is not clear to me
+if this is normal, or if AJC should produce a row or column stochastic matrix.
+
+When examining the eigenvalues of the ARM calculated with rate matrices we run
+into a problem: some eigenvalues have complex parts.
+
+```{julia}
+#| fig-cap: Sorted eigenvalues of the rate ARM.
+valsr, _ = eigen(Jr |> Matrix)
+plot(imag(valsr), label="Imaginary part")
+plot!(real(valsr), label="Real part")
+```
+
+Even though the imaginary part for these eigenvalues is commparatively small,
+there is still cause for concern. In theory, an ARM should not have complex
+eigenvalues.
+
+Since the eigenvalues are sorted by magnitude it makes little sense to compare
+how similar or different the ARMs obtained via the two methods described by
+calculating the difference between eigenvalues. However, just to show how little
+resemblance they bear, @fig-eigs-diff shows the absolute difference between
+the eigenvalues of each ARM.
+
+```{julia}
+#| fig-cap: Difference of the (real part) of the eigenvalues for each ARM
+#| label: fig-eigs-diff
+plot(abs.(real(valsr) - valsp))
+```
+
+## The attempt
+
+Disregarding for a moment the apparent problems described previously, we try to
+apply PCCA+ to the resulting ARMS. For this to not to be trivially flawed, we
+row-normalize both AR Matrices before feeding them into PCCA+. 
+
+```{julia}
+Jrn = Matrix(Jr ./ sum(Jr; dims=2))
+Jrp = Matrix(Jp ./ sum(Jp; dims=2));
+```
+
+When trying this, we run into an assertion error that is supposed to fail
+whenever the condtion:
+$$
+    (X^\top X) ./ \operatorname{size}(X, 1) \approx I
+$$
+where $I$ is the identity matrix. Intuitively, this check seems to have
+something to do with the symmetry of the matrix that we try to apply PCCA+ on.
+However, formally, I don't know where the condition comes from. Reviewing the
+theory about the procedure, I haven't been able to concretely place or name the
+condition or why its violation is problematic.
+
+After "symmetrizing" the ARM by multiplying it with it's own tranpose produces a
+different matrix this is neither a rate nor a probability matrix, and thus, is
+not intended to be used as input to PCCA+.
+
+# Questions
+
+1. Is the entire approach of trying to use AJC to produce a generator for the
+jump process of an ABM and then using PCCA+ to study metastability inherently
+flawed and thus the failure of the pipeline is to be expected?
+
+2. Do the results of the AJC suggest a flaw of application, or a flaw of
+implementation? i.e, does the fact that something with complex (or negative)
+eigenvalues is resulting from the application of AJC to some rate or probability
+matrices suggest that the algorithm is implemented wrong?
